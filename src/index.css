@@ -2,156 +2,34 @@
 @tailwind components;
 @tailwind utilities;
 
-body,
-html {
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
+
+* {
   margin: 0;
   padding: 0;
-  font-family: "Arial", sans-serif;
+}
+body,
+html {
+  font-family: "Montserrat", sans-serif;
   background-color: #000;
   height: 100%;
   color: white;
   box-sizing: border-box;
 }
 
-/*
-.signin-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  padding: 0 20px;
+:root {
+  --color-ppl-text-primary: #3b3c43;
+  --color-ppl-text-white: #fff;
 }
-
-*,
-*::before,
-*::after {
-  box-sizing: inherit;
-}
-
-.title {
-  font-size: 1.8rem;
-  font-weight: 700;
-  margin-bottom: 2rem;
-  text-align: center;
-}
-
-.title span {
-  color: #3b3c43;
-}
-
-.signin-form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 350px;
-  max-width: 100%;
-}
-
-.signin-form h2 {
-  font-weight: 400;
-  font-size: 20px;
-  letter-spacing: 0px;
-  margin-bottom: 1.5rem;
-  color: white;
-  text-align: center;
-}
-
-input {
-  width: 100%;
-  padding: 10px;
-  background-color: transparent;
-  border: 1px solid #444;
-  color: white;
-  border-radius: 3px;
-  margin-bottom: 15px;
-  outline: none;
-  transition: border-color 0.2s ease;
-}
-
-input::placeholder {
-  color: #777;
-}
-
-input:hover,
-input:focus {
-  border-color: #fff;
-  box-shadow: 0 0 4px #fff;
-}
-
-.password-wrapper {
-  width: 100%;
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.password-wrapper input {
-  width: 100%;
-  padding-right: 40px;
-}
-
-.eye-icon {
-  padding-bottom: 10px;
-  position: absolute;
-  right: 10px;
-  cursor: pointer;
-  color: #555;
-  font-size: 1.2rem;
-  transition: color 0.2s ease;
-}
-
-.signin-btn {
-  width: 100%;
-  padding: 10px;
-  border: none;
-  border-radius: 3px;
-  background-color: white;
-  color: black;
-  font-weight: bold;
-  cursor: pointer;
-  margin-top: 10px;
-}
-  above is commented for tailwind purpose
-*/
- 
-  /* 
-.signintext
-{
-  font-size:16px;
-  font-weight:600;
-} according to figma*/
-
-/* for tailwind purpose 
-.signin-btn:hover {
-  background-color: white;
-  color: black;
-  border-color: #ffffff;
-  box-shadow: white;
-  transform: translateY(-2px);
-}
-
-.signin-btn.disabled {
-  cursor: pointer;
-  background-color: white;
-  color: #999;
-}
-
-.signin-btn.disabled:hover {
-  background-color: white;
-  color: #999;
-  border: none;
-}
-tailwind purpose over */
 
 .input-error {
-  border: 1px solid #CC000D;
+  border: 1px solid #cc000d;
   font-family: Montserrat;
 }
 
 .error-message {
   font-family: Montserrat;
-  color: #CC000D;
+  color: #cc000d;
   font-size: 14px;
   letter-spacing: 0px;
   margin-top: 4px;
@@ -273,32 +151,8 @@ tailwind purpose over */
 .header-actions {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 15px;
-  margin-bottom: 30px;
-}
-
-.search-wrapper {
-  position: relative;
-  flex: 1;
-}
-
-.search-icon {
-  position: absolute;
-  left: 12px;
-  top: 10px;
-  width: 16px;
-  height: 16px;
-  opacity: 0.6;
-}
-
-.search-input {
-  padding: 10px 14px 10px 36px;
-  background-color: #f1f1f1;
-  color: #000000;
-  font-weight: 400;
-  font-size: 16px;
-  letter-spacing: 0px;
+  gap: 16px;
+  width: 100%;
 }
 
 .create-btn {
@@ -453,7 +307,6 @@ tailwind purpose over */
   opacity: 0.8;
 }
 
-/* Create New Button*/
 .create-form-container {
   padding: 30px 50px;
   background: #fff;
@@ -465,15 +318,37 @@ tailwind purpose over */
 .create-header {
   display: flex;
   align-items: center;
-  gap: 15px;
-  margin-bottom: 20px;
+  padding: 1rem 0;
+}
+
+.create-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .go-back-icon {
-  width: 25px;
-  height: 25px;
+  width: 20px;
+  height: 20px;
   cursor: pointer;
-  transform: rotate(90deg);
+  transition: transform 0.2s ease;
+}
+
+.go-back-icon:hover {
+  background-color: #717171;
+}
+
+.create-header-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.create-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #000;
+  margin: 0;
+  text-transform: uppercase;
 }
 
 .upload-section {
@@ -560,46 +435,62 @@ tailwind purpose over */
   background: #333;
 }
 
-/* Entry or Details table styling */
-.news-table {
-  width: 100%;
-  height: 60px;
-  border-collapse: collapse;
-  margin-top: 20px;
+.title-cell {
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.news-table th,
+.news-table {
+  width: 100%;
+  margin-top: 20px;
+  background: #fff;
+}
+
 .news-table td {
-  padding: 12px 16px;
+  font-weight: 500;
+  padding: 16px;
   text-align: left;
-  border-bottom: 1px solid #ddd;
-  color: #3b3c43;
+  border: none;
+  color: black;
+  vertical-align: middle;
 }
 
 .news-table th {
   font-weight: 600;
+  font-size: 12px;
   color: #3b3c43;
-}
-
-.news-table tr {
   background: #fff;
+  border-bottom: 1px solid #ddd;
+  padding: 16px;
+  text-align: left;
+  vertical-align: middle;
 }
 
-.news-table tr:hover {
-  background: #f1f1f1;
+.news-table tbody tr {
+  background: #fff;
+  border-bottom: none;
+}
+
+.news-table tbody tr:hover {
+  background: #f5f5f5;
 }
 
 .actions {
   display: flex;
   gap: 10px;
   align-items: center;
+  justify-content: flex-end;
 }
 
 .table-icon-edit,
 .table-icon-delete,
 .table-icon-schedule {
-  padding: 20px;
+  padding: 8px;
   cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
 }
 
 .table-icon-edit:hover,
@@ -608,21 +499,47 @@ tailwind purpose over */
 }
 
 .search-wrapper {
+  position: relative;
+  flex: 1; 
   display: flex;
   align-items: center;
-  background: #f5f5f5;
-  border-radius: 6px;
-  padding: 6px 10px;
-  width: 929px;
-  height: 50px;
 }
 
 .search-input {
-  border: none;
+  width: 100%;
+  height: 50px;
+  padding: 10px 40px 10px 40px; 
+  border: 1px solid #ddd;
+  font-size: 16px;
+  font-weight: 400;
   outline: none;
-  background: transparent;
-  flex: 1;
-  margin-left: 8px;
+  background-color: #f8f8f8;
+  transition: border 0.2s ease;
+}
+
+.search-icon {
+  position: absolute;
+  top: 13px;
+  bottom: 13px;
+  left: 13px;
+  width: 24px;
+  height: 24px;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.search-close-icon {
+  right: 0;
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.search-close-icon:hover {
+  opacity: 1;
 }
 
 .textdecor1 {
@@ -630,21 +547,21 @@ tailwind purpose over */
   font-weight: 400;
   letter-spacing: 0%;
   font-size: 14px;
-  color: #3B3C43;
+  color: #3b3c43;
 }
 .textdecor2 {
   font-family: Montserrat;
   font-weight: 400;
   letter-spacing: 0%;
   font-size: 12px;
-  color: #3B3C43;
+  color: #3b3c43;
 }
 .textdecor3 {
   font-family: Montserrat;
   font-weight: 400;
   letter-spacing: 0%;
   font-size: 12px;
-  color: #3B3C43;
+  color: #3b3c43;
   text-decoration: underline;
 }
 .textdecor4 {
@@ -652,42 +569,16 @@ tailwind purpose over */
   font-weight: 400;
   letter-spacing: 0%;
   font-size: 10px;
-  color: #3B3C43;
+  color: #3b3c43;
 }
-
-/*
-.create-btn {
-  background: #000;
-  color: #fff;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.create-btn:hover {
-  background: #333;
-}
-*/
 
 /* Create New Page */
+
 .create-header {
   display: flex;
   align-items: center;
   gap: 10px;
   margin-bottom: 20px;
-}
-
-.go-back-icon {
-  width: 30px;
-  cursor: pointer;
-  background-color: white;
-  color: black;
-}
-
-.go-back-icon:hover{
-  background-color: white;
-  color: #717171;
 }
 
 .form-grid {
@@ -707,51 +598,19 @@ tailwind purpose over */
 }
 
 /* Pagination Styling */
-.pagination {
+
+.pagination-container {
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  background: #fff;
+  padding: 10px 0;
   margin-top: 20px;
-  gap: 10px;
 }
 
 .pagination-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.2s ease;
-}
-
-.pagination-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.pagination-icon {
-  width: 24px;
-  height: 24px;
-}
-
-.pagination-info {
-  font-family: DM Sans;
-  font-weight: 400;
-  font-size: 16px;
-}
-
-/*.pagination-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 20px;
-  font-family: 'DM Sans', sans-serif;
-}
-
-.pagination-btn {
+  color: #717171;
   background: none;
   border: none;
   cursor: pointer;
@@ -768,15 +627,15 @@ tailwind purpose over */
 }
 
 .pagination-icon {
-  width: 16px;
-  height: 16px;
-  filter: brightness(0) saturate(100%) invert(0%) sepia(0%) saturate(0%)
-    hue-rotate(0deg) brightness(0%) contrast(100%);
+  width: 20px;
+  height: 20px;
+  filter: brightness(0) saturate(100%) invert(44%) sepia(0%) saturate(0%)
+    hue-rotate(0deg) brightness(95%) contrast(88%);
 }
 
 .pagination-text {
   color: #3b3c43;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 400;
   letter-spacing: 0;
   display: flex;
@@ -785,7 +644,11 @@ tailwind purpose over */
 }
 
 .pagination-current {
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
   color: #000;
 }
-*/
+
+.pagination-btn:hover:not(:disabled) {
+  opacity: 0.7;
+}

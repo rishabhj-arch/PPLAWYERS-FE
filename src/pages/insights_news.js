@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../design/style.css";
 import noDataIcon from "../assets/news-svgrepo-com 1.svg";
 import logout from "../assets/log-out.svg";
 import search from "../assets/search-normal.png";
@@ -11,9 +10,14 @@ import arrowDown from "../assets/arrow-down.png";
 import calendarIcon from "../assets/calendar_completed.png";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import searchcloseicon from "../assets/searchcloseicon.png";
 import TrashIcon from "../assets/TrashIcon";
 import Editicon from "../assets/Editicon";
 import Fileupload from "../assets/Fileupload";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { ToastContainer, toast, Bounce } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function InsightsNews() {
   const navigate = useNavigate();
@@ -39,19 +43,30 @@ export default function InsightsNews() {
   const [totalPages, setTotalPages] = useState(1);
   const limit = 10;
 
+  const toastOptions = {
+    position: "bottom-right",
+    autoClose: 5000,
+    hideProgressBar: true,
+    closeOnClick: true,
+    pauseOnHover: false,
+    draggable: false,
+    progress: undefined,
+    theme: "light",
+    transition: Bounce,
+  };
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) navigate("/signin");
     fetchNews(page);
   }, [navigate, page]);
 
-  const fetchNews = async (pageNum = 1) => {
+  const fetchNews = async () => {
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch(
-        `http://localhost:3000/api/news?page=${pageNum}&limit=${limit}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const res = await fetch(`http://localhost:3000/api/news`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (!res.ok) {
         if (res.status === 401) {
           localStorage.removeItem("token");
@@ -62,11 +77,14 @@ export default function InsightsNews() {
         return;
       }
       const data = await res.json();
+
       const sorted = (data.data || []).sort(
         (a, b) => new Date(b.date) - new Date(a.date)
       );
+
       setNewsData(sorted);
-      setTotalPages(data.totalPages || 1);
+      const total = Math.ceil(sorted.length / limit);
+      setTotalPages(total);
     } catch (err) {
       console.error("Error fetching news:", err);
       setNewsData([]);
@@ -102,15 +120,7 @@ export default function InsightsNews() {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const allowedTypes = [
-        "image/webp",
-        "image/jpeg",
-        "image/jpg",
-        "image/png",
-        "image/gif",
-        "image/svg+xml",
-        "image/avif",
-      ];
+      const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
       if (!allowedTypes.includes(file.type)) {
         setErrors({
           file: "The file type you have uploaded is not supported.",
@@ -135,8 +145,6 @@ export default function InsightsNews() {
     if (!formData.date) newErrors.date = "Please select date & time";
     if (!formData.title.trim()) newErrors.title = "Please enter title";
     if (!formData.tag.trim()) newErrors.tag = "Please add tag";
-    if (!formData.description.trim())
-      newErrors.description = "Please add description";
     if (!editing && !formData.file) newErrors.file = "Please upload an image";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -171,6 +179,7 @@ export default function InsightsNews() {
         });
         await fetchNews(1);
         setPage(1);
+        toast.success("Insights and News are Created.", toastOptions);
       } else {
         const data = await res.json();
         setErrors({ form: data.message || "Error creating entry" });
@@ -227,6 +236,7 @@ export default function InsightsNews() {
           file: null,
         });
         await fetchNews(page);
+        toast.success("Insights and News are Updated.", toastOptions);
       } else {
         setErrors({ form: "Error updating entry" });
       }
@@ -243,6 +253,7 @@ export default function InsightsNews() {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchNews(page);
+      toast.success("Insights and news have been deleted.", toastOptions);
     } catch (err) {
       console.error(err);
     }
@@ -302,6 +313,14 @@ export default function InsightsNews() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
+                {searchQuery && (
+                  <img
+                    src={searchcloseicon}
+                    alt="Clear"
+                    className="search-close-icon"
+                    onClick={() => setSearchQuery("")}
+                  />
+                )}
               </div>
               <button
                 className="create-btn"
@@ -322,7 +341,6 @@ export default function InsightsNews() {
                 CREATE NEW
               </button>
             </div>
-
             <section className="content">
               {filteredNews.length > 0 ? (
                 <>
@@ -356,7 +374,7 @@ export default function InsightsNews() {
                               return `${parts[0]} ${parts[1]}, ${parts[2]}`;
                             })()}
                           </td>
-                          <td>{item.title}</td>
+                          <td className="title-cell">{item.title}</td>
                           <td className="actions">
                             <img
                               src={calendarIcon}
@@ -365,7 +383,10 @@ export default function InsightsNews() {
                             />
                             <span
                               className="table-icon-edit"
-                              onClick={() => handleEdit(item)}
+                              onClick={() => {
+                                setIsEditHover(false);
+                                handleEdit(item);
+                              }}
                               onMouseEnter={() => setIsEditHover(index)}
                               onMouseLeave={() => setIsEditHover(false)}
                             >
@@ -460,13 +481,25 @@ export default function InsightsNews() {
 
           <main className="main-content">
             <div className="create-header">
-              <img
-                src={arrowDown}
-                alt="Go back"
-                className="go-back-icon"
-                onClick={() => setShowCreateForm(false)}
-              />
-              <h2>{editing ? "EDIT NEWS" : "CREATE NEW"}</h2>
+              <div
+                className="create-header-left"
+                style={{ display: "flex", alignItems: "center", gap: "8px" }}
+              >
+                <img
+                  src={arrowDown}
+                  alt="Go back"
+                  className="go-back-icon"
+                  onClick={() => {
+                    setShowCreateForm(false);
+                    setIsEditHover(false);
+                    setIsTrashHover(false);
+                  }}
+                  style={{ cursor: "pointer" }}
+                />
+                <h2 className="create-header-title">
+                  {editing ? "EDIT" : "CREATE NEW"}
+                </h2>
+              </div>
             </div>
 
             <div className="upload-section">
@@ -495,7 +528,14 @@ export default function InsightsNews() {
                 />
               </label>
             </div>
-            {errors.file && <p className="error-message">{errors.file}</p>}
+            {errors.file && (
+              <p className="error-message">
+                <span className="rounded-full bg-[#CC000D] text-white h-5 w-5 flex item-center justify-center">
+                  i
+                </span>
+                {errors.file}
+              </p>
+            )}
 
             <div className="form-grid">
               <div>
@@ -507,7 +547,14 @@ export default function InsightsNews() {
                   onChange={handleInputChange}
                   className={errors.name ? "input-error" : ""}
                 />
-                {errors.name && <p className="error-message">{errors.name}</p>}
+                {errors.name && (
+                  <p className="error-message">
+                    <span className="rounded-full bg-[#CC000D] text-white h-5 w-5 flex item-center justify-center">
+                      i
+                    </span>
+                    {errors.name}
+                  </p>
+                )}
               </div>
               <div>
                 <input
@@ -518,7 +565,14 @@ export default function InsightsNews() {
                   onChange={handleInputChange}
                   className={errors.date ? "input-error" : ""}
                 />
-                {errors.date && <p className="error-message">{errors.date}</p>}
+                {errors.date && (
+                  <p className="error-message">
+                    <span className="rounded-full bg-[#CC000D] text-white h-5 w-5 flex item-center justify-center">
+                      i
+                    </span>
+                    {errors.date}
+                  </p>
+                )}
               </div>
               <div>
                 <input
@@ -530,7 +584,12 @@ export default function InsightsNews() {
                   className={errors.title ? "input-error" : ""}
                 />
                 {errors.title && (
-                  <p className="error-message">{errors.title}</p>
+                  <p className="error-message">
+                    <span className="rounded-full bg-[#CC000D] text-white h-5 w-5 flex item-center justify-center">
+                      i
+                    </span>
+                    {errors.title}
+                  </p>
                 )}
               </div>
               <div>
@@ -542,7 +601,14 @@ export default function InsightsNews() {
                   onChange={handleInputChange}
                   className={errors.tag ? "input-error" : ""}
                 />
-                {errors.tag && <p className="error-message">{errors.tag}</p>}
+                {errors.tag && (
+                  <p className="error-message">
+                    <span className="rounded-full bg-[#CC000D] text-white h-5 w-5 flex item-center justify-center">
+                      i
+                    </span>
+                    {errors.tag}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -600,7 +666,7 @@ export default function InsightsNews() {
         <div className="modal-overlay">
           <div className="logout-modal">
             <h3>DELETE</h3>
-            <p>Are you sure you want to delete this entry?</p>
+            <p>Are you sure you want to delete?</p>
             <div className="modal-actions">
               <button className="cancel-btn" onClick={cancelDelete}>
                 CANCEL
@@ -612,6 +678,19 @@ export default function InsightsNews() {
           </div>
         </div>
       )}
+      <ToastContainer
+        position="bottom-right"
+        autoClose={5000}
+        hideProgressBar
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss={false}
+        draggable={false}
+        pauseOnHover={false}
+        theme="light"
+        transition={Bounce}
+      />
     </div>
   );
 }
