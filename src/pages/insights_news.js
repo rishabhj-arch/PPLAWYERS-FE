@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import dayjs from "dayjs";
+
 import noDataIcon from "../assets/news-svgrepo-com 1.svg";
 import logout from "../assets/log-out.svg";
 import search from "../assets/search-normal.png";
@@ -7,17 +13,35 @@ import previcon from "../assets/prev_icon.png";
 import nexticon from "../assets/next_icon.png";
 import sidebaricon from "../assets/news-svgrepo-com (1) 1.svg";
 import arrowDown from "../assets/arrow-down.png";
-import calendarIcon from "../assets/calendar_completed.png";
+import calendarcompleted from "../assets/calendar_completed.png";
+import calendarpending from "../assets/calendar_pending.png";
+
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import searchcloseicon from "../assets/searchcloseicon.png";
 import TrashIcon from "../assets/TrashIcon";
 import Editicon from "../assets/Editicon";
 import Fileupload from "../assets/Fileupload";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+
 import { ToastContainer, toast, Bounce } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import removebuttonmediapreview from "../assets/removebuttonmediapreview.png";
+import removebuttonmediapreviewhover from "../assets/removebuttonmediapreviewhover.png";
+
+const toolbarModules = {
+  toolbar: [
+    [{ font: [] }, { size: [] }],
+    ["bold", "italic", "underline", "strike"],
+    ["blockquote"],
+    [
+      { list: "ordered" },
+      { list: "bullet" },
+      { indent: "-1" },
+      { indent: "+1" },
+    ],
+    ["link"],
+  ],
+};
 
 export default function InsightsNews() {
   const navigate = useNavigate();
@@ -28,9 +52,10 @@ export default function InsightsNews() {
   const [isEditHover, setIsEditHover] = useState(false);
   const [editing, setEditing] = useState(false);
   const [errors, setErrors] = useState({});
+  const [imagePreview, setImagePreview] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
-    date: "",
+    date: null,
     title: "",
     tag: "",
     description: "",
@@ -61,12 +86,16 @@ export default function InsightsNews() {
     fetchNews(page);
   }, [navigate, page]);
 
-  const fetchNews = async () => {
+  const fetchNews = async (pageNum = 1) => {
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch(`http://localhost:3000/api/news`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(
+        `http://localhost:3000/api/news?page=${pageNum}&limit=${limit}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
       if (!res.ok) {
         if (res.status === 401) {
           localStorage.removeItem("token");
@@ -76,15 +105,11 @@ export default function InsightsNews() {
         setNewsData([]);
         return;
       }
+
       const data = await res.json();
 
-      const sorted = (data.data || []).sort(
-        (a, b) => new Date(b.date) - new Date(a.date)
-      );
-
-      setNewsData(sorted);
-      const total = Math.ceil(sorted.length / limit);
-      setTotalPages(total);
+      setNewsData(data.data || []);
+      setTotalPages(data.totalPages || 1);
     } catch (err) {
       console.error("Error fetching news:", err);
       setNewsData([]);
@@ -117,6 +142,12 @@ export default function InsightsNews() {
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
+  const handleDateChange = (date) => {
+    const dateString = date ? dayjs(date).format("YYYY-MM-DD") : null;
+    setFormData({ ...formData, date: dateString });
+    setErrors((prev) => ({ ...prev, date: "" }));
+  };
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -126,12 +157,26 @@ export default function InsightsNews() {
           file: "The file type you have uploaded is not supported.",
         });
         setFormData({ ...formData, file: null });
+        setImagePreview(null);
         e.target.value = null;
         return;
       }
       setErrors((prev) => ({ ...prev, file: "" }));
       setFormData({ ...formData, file });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
     }
+  };
+
+  const handleRemoveImage = () => {
+    setFormData({ ...formData, file: null });
+    setImagePreview(null);
+    setErrors((prev) => ({ ...prev, file: "" }));
+    const fileInput = document.getElementById("file-upload");
+    if (fileInput) fileInput.value = null;
   };
 
   const handleDescriptionChange = (value) => {
@@ -171,12 +216,13 @@ export default function InsightsNews() {
         setEditing(false);
         setFormData({
           name: "",
-          date: "",
+          date: null,
           title: "",
           tag: "",
           description: "",
           file: null,
         });
+        setImagePreview(null);
         await fetchNews(1);
         setPage(1);
         toast.success("Insights and News are Created.", toastOptions);
@@ -192,16 +238,17 @@ export default function InsightsNews() {
   const handleEdit = (item) => {
     setFormData({
       name: item.name,
-      date: item.date ? item.date.split("T")[0] : "",
+      date: item.date ? dayjs(item.date.split("T")[0]) : null,
       title: item.title,
       tag: item.tag,
       description: item.description,
-      file: null,
+      file: null, // no new file yet
     });
     setSelectedNewsId(item.id);
     setEditing(true);
     setShowCreateForm(true);
     setErrors({});
+    setImagePreview(item.imageUrl ? item.imageUrl : null); // show existing image
   };
 
   const handleUpdate = async () => {
@@ -209,7 +256,10 @@ export default function InsightsNews() {
     const token = localStorage.getItem("token");
     const form = new FormData();
     form.append("name", formData.name);
-    form.append("date", formData.date);
+    const dateToSubmit = formData.date
+      ? dayjs(formData.date).format("YYYY-MM-DD")
+      : "";
+    form.append("date", dateToSubmit);
     form.append("title", formData.title);
     form.append("tag", formData.tag);
     form.append("description", formData.description);
@@ -229,12 +279,13 @@ export default function InsightsNews() {
         setSelectedNewsId(null);
         setFormData({
           name: "",
-          date: "",
+          date: null,
           title: "",
           tag: "",
           description: "",
           file: null,
         });
+        setImagePreview(null);
         await fetchNews(page);
         toast.success("Insights and News are Updated.", toastOptions);
       } else {
@@ -275,75 +326,76 @@ export default function InsightsNews() {
   };
 
   return (
-    <div className="insights-container">
-      {!showCreateForm ? (
-        <>
-          <aside className="sidebar">
-            <div className="sidebar-top">
-              <div className="logo">
-                PAUL <span>&</span> PAUL LAWYERS
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <div className="insights-container">
+        {!showCreateForm ? (
+          <>
+            <aside className="sidebar">
+              <div className="sidebar-top">
+                <div className="logo">
+                  PAUL <span>&</span> PAUL LAWYERS
+                </div>
+                <nav className="nav">
+                  <ul>
+                    <li className="active">
+                      <img src={sidebaricon} alt="sidebaricon" />
+                      Insights & News
+                    </li>
+                  </ul>
+                </nav>
               </div>
-              <nav className="nav">
-                <ul>
-                  <li className="active">
-                    <img src={sidebaricon} alt="sidebaricon" />
-                    Insights & News
-                  </li>
-                </ul>
-              </nav>
-            </div>
-            <button onClick={handleLogout} className="logout-btn">
-              <img src={logout} alt="logout icon" className="logouticon" />
-              Log out
-            </button>
-          </aside>
-
-          <main className="main-content">
-            <header className="header">
-              <h2 className="headerp">INSIGHTS & NEWS</h2>
-            </header>
-            <div className="divider"></div>
-            <div className="header-actions">
-              <div className="search-wrapper">
-                <img src={search} alt="search icon" className="search-icon" />
-                <input
-                  type="text"
-                  placeholder="Search here..."
-                  className="search-input"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                {searchQuery && (
-                  <img
-                    src={searchcloseicon}
-                    alt="Clear"
-                    className="search-close-icon"
-                    onClick={() => setSearchQuery("")}
-                  />
-                )}
-              </div>
-              <button
-                className="create-btn"
-                onClick={() => {
-                  setEditing(false);
-                  setFormData({
-                    name: "",
-                    date: "",
-                    title: "",
-                    tag: "",
-                    description: "",
-                    file: null,
-                  });
-                  setErrors({});
-                  setShowCreateForm(true);
-                }}
-              >
-                CREATE NEW
+              <button onClick={handleLogout} className="logout-btn">
+                <img src={logout} alt="logout icon" className="logouticon" />
+                Log out
               </button>
-            </div>
-            <section className="content">
-              {filteredNews.length > 0 ? (
-                <>
+            </aside>
+
+            <main className="main-content">
+              <header className="header">
+                <h2 className="headerp">INSIGHTS & NEWS</h2>
+              </header>
+              <div className="divider"></div>
+              <div className="header-actions">
+                <div className="search-wrapper">
+                  <img src={search} alt="search icon" className="search-icon" />
+                  <input
+                    type="text"
+                    placeholder="Search here..."
+                    className="search-input"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  {searchQuery && (
+                    <img
+                      src={searchcloseicon}
+                      alt="Clear"
+                      className="search-close-icon"
+                      onClick={() => setSearchQuery("")}
+                    />
+                  )}
+                </div>
+                <button
+                  className="create-btn"
+                  onClick={() => {
+                    setEditing(false);
+                    setFormData({
+                      name: "",
+                      date: null,
+                      title: "",
+                      tag: "",
+                      description: "",
+                      file: null,
+                    });
+                    setErrors({});
+                    setImagePreview(null);
+                    setShowCreateForm(true);
+                  }}
+                >
+                  CREATE NEW
+                </button>
+              </div>
+              <section className="content">
+                {filteredNews.length > 0 ? (
                   <table className="news-table">
                     <thead>
                       <tr>
@@ -357,7 +409,7 @@ export default function InsightsNews() {
                     <tbody>
                       {filteredNews.map((item, index) => (
                         <tr key={item.id}>
-                          <td>{filteredNews.length - index}</td>
+                          <td>{(page - 1) * limit + (index + 1)}</td>
                           <td>{item.name}</td>
                           <td>
                             {(() => {
@@ -377,9 +429,20 @@ export default function InsightsNews() {
                           <td className="title-cell">{item.title}</td>
                           <td className="actions">
                             <img
-                              src={calendarIcon}
-                              alt="calendar"
+                              src={
+                                new Date(item.date).setHours(0, 0, 0, 0) >
+                                new Date().setHours(0, 0, 0, 0)
+                                  ? calendarpending
+                                  : calendarcompleted
+                              }
+                              alt={
+                                new Date(item.date).setHours(0, 0, 0, 0) >
+                                new Date().setHours(0, 0, 0, 0)
+                                  ? "Pending"
+                                  : "Completed"
+                              }
                               className="table-icon-schedule"
+                              style={{ width: "20px", height: "20px" }}
                             />
                             <span
                               className="table-icon-edit"
@@ -391,11 +454,14 @@ export default function InsightsNews() {
                               onMouseLeave={() => setIsEditHover(false)}
                             >
                               <Editicon
+                                width="20"
+                                height="20"
                                 strokeeditcolor={
                                   isEditHover === index ? "#fff" : "#000"
                                 }
                               />
                             </span>
+
                             <span
                               className="table-icon-delete"
                               onClick={() => handleDeleteModal(item.id)}
@@ -403,6 +469,8 @@ export default function InsightsNews() {
                               onMouseLeave={() => setIsTrashHover(false)}
                             >
                               <TrashIcon
+                                width="20"
+                                height="20"
                                 strokecolor={
                                   isTrashHover === index ? "#fff" : "#000"
                                 }
@@ -413,284 +481,307 @@ export default function InsightsNews() {
                       ))}
                     </tbody>
                   </table>
-                  <div className="pagination-container">
-                    <button
-                      onClick={handlePrev}
-                      disabled={page === 1}
-                      className="pagination-btn"
-                    >
-                      <img
-                        src={previcon}
-                        alt="Previous"
-                        className="pagination-icon"
-                      />
-                    </button>
-
-                    <span className="pagination-text">
-                      Page <span className="pagination-current">{page}</span> of{" "}
-                      {totalPages}
-                    </span>
-
-                    <button
-                      onClick={handleNext}
-                      disabled={page === totalPages}
-                      className="pagination-btn"
-                    >
-                      <img
-                        src={nexticon}
-                        alt="Next"
-                        className="pagination-icon"
-                      />
-                    </button>
+                ) : (
+                  <div className="no-data">
+                    <img
+                      src={noDataIcon}
+                      alt="No data"
+                      className="no-data-icon"
+                    />
+                    <p className="datap">No data available</p>
                   </div>
-                </>
-              ) : (
-                <div className="no-data">
+                )}
+              </section>
+              <div className="pagination-container">
+                <button
+                  onClick={handlePrev}
+                  disabled={page === 1}
+                  className="pagination-btn"
+                >
                   <img
-                    src={noDataIcon}
-                    alt="No data"
-                    className="no-data-icon"
+                    src={previcon}
+                    alt="Previous"
+                    className="pagination-icon"
                   />
-                  <p className="datap">No data available</p>
-                </div>
-              )}
-            </section>
-          </main>
-        </>
-      ) : (
-        <>
-          <aside className="sidebar">
-            <div className="sidebar-top">
-              <div className="logo">
-                PAUL <span>&</span> PAUL LAWYERS
-              </div>
-              <nav className="nav">
-                <ul>
-                  <li className="active">
-                    <img src={sidebaricon} alt="sidebaricon" />
-                    Insights & News
-                  </li>
-                </ul>
-              </nav>
-            </div>
-            <button onClick={handleLogout} className="logout-btn">
-              <img src={logout} alt="logout icon" className="logouticon" />
-              Log out
-            </button>
-          </aside>
+                </button>
 
-          <main className="main-content">
-            <div className="create-header">
-              <div
-                className="create-header-left"
-                style={{ display: "flex", alignItems: "center", gap: "8px" }}
-              >
-                <img
-                  src={arrowDown}
-                  alt="Go back"
-                  className="go-back-icon"
-                  onClick={() => {
-                    setShowCreateForm(false);
-                    setIsEditHover(false);
-                    setIsTrashHover(false);
-                  }}
-                  style={{ cursor: "pointer" }}
-                />
-                <h2 className="create-header-title">
-                  {editing ? "EDIT" : "CREATE NEW"}
-                </h2>
-              </div>
-            </div>
-
-            <div className="upload-section">
-              <label htmlFor="file-upload" className="upload-box">
-                <div className="upload-content">
-                  <Fileupload className="upload-icon" />
-                  <div className="upload-text">
-                    <span className="textdecor1">
-                      Drag & Drop your image here
-                    </span>
-                    <div className="browse-line">
-                      <span className="textdecor2">or </span>
-                      <span className="textdecor3">Click to browse</span>
-                    </div>
-                    <span className="textdecor4">
-                      *Maximum upload file size: 10MB
-                    </span>
-                  </div>
-                </div>
-                <input
-                  id="file-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  style={{ display: "none" }}
-                />
-              </label>
-            </div>
-            {errors.file && (
-              <p className="error-message">
-                <span className="rounded-full bg-[#CC000D] text-white h-5 w-5 flex item-center justify-center">
-                  i
+                <span className="pagination-text">
+                  Page <span className="pagination-current">{page}</span> of{" "}
+                  {totalPages}
                 </span>
-                {errors.file}
-              </p>
-            )}
 
-            <div className="form-grid">
-              <div>
-                <input
-                  type="text"
-                  name="name"
-                  placeholder="Name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  className={errors.name ? "input-error" : ""}
-                />
-                {errors.name && (
-                  <p className="error-message">
-                    <span className="rounded-full bg-[#CC000D] text-white h-5 w-5 flex item-center justify-center">
-                      i
-                    </span>
-                    {errors.name}
-                  </p>
-                )}
+                <button
+                  onClick={handleNext}
+                  disabled={page === totalPages}
+                  className="pagination-btn"
+                >
+                  <img src={nexticon} alt="Next" className="pagination-icon" />
+                </button>
               </div>
-              <div>
-                <input
-                  type="date"
-                  name="date"
-                  placeholder="Date"
-                  value={formData.date}
-                  onChange={handleInputChange}
-                  className={errors.date ? "input-error" : ""}
-                />
-                {errors.date && (
-                  <p className="error-message">
-                    <span className="rounded-full bg-[#CC000D] text-white h-5 w-5 flex item-center justify-center">
-                      i
-                    </span>
-                    {errors.date}
-                  </p>
-                )}
+            </main>
+          </>
+        ) : (
+          <>
+            <aside className="sidebar">
+              <div className="sidebar-top">
+                <div className="logo">
+                  PAUL <span>&</span> PAUL LAWYERS
+                </div>
+                <nav className="nav">
+                  <ul>
+                    <li className="active">
+                      <img src={sidebaricon} alt="sidebaricon" />
+                      Insights & News
+                    </li>
+                  </ul>
+                </nav>
               </div>
-              <div>
-                <input
-                  type="text"
-                  name="title"
-                  placeholder="Title"
-                  value={formData.title}
-                  onChange={handleInputChange}
-                  className={errors.title ? "input-error" : ""}
-                />
-                {errors.title && (
-                  <p className="error-message">
-                    <span className="rounded-full bg-[#CC000D] text-white h-5 w-5 flex item-center justify-center">
-                      i
-                    </span>
-                    {errors.title}
-                  </p>
-                )}
-              </div>
-              <div>
-                <input
-                  type="text"
-                  name="tag"
-                  placeholder="Tag"
-                  value={formData.tag}
-                  onChange={handleInputChange}
-                  className={errors.tag ? "input-error" : ""}
-                />
-                {errors.tag && (
-                  <p className="error-message">
-                    <span className="rounded-full bg-[#CC000D] text-white h-5 w-5 flex item-center justify-center">
-                      i
-                    </span>
-                    {errors.tag}
-                  </p>
-                )}
-              </div>
-            </div>
+              <button onClick={handleLogout} className="logout-btn">
+                <img src={logout} alt="logout icon" className="logouticon" />
+                Log out
+              </button>
+            </aside>
 
-            <div className="description-editor">
-              <ReactQuill
-                placeholder="Description"
-                theme="snow"
-                value={formData.description}
-                onChange={handleDescriptionChange}
-                className={`text-editor ${
-                  errors.description ? "input-error" : ""
-                }`}
-              />
-              {errors.description && (
-                <p className="error-message">{errors.description}</p>
+            <main className="main-content">
+              <div className="create-header">
+                <div
+                  className="create-header-left"
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
+                  <img
+                    src={arrowDown}
+                    alt="Go back"
+                    className="go-back-icon"
+                    onClick={() => {
+                      setShowCreateForm(false);
+                      setIsEditHover(false);
+                      setIsTrashHover(false);
+                      setImagePreview(null);
+                    }}
+                    style={{ cursor: "pointer" }}
+                  />
+                  <h2 className="create-header-title">
+                    {editing ? "EDIT" : "CREATE NEW"}
+                  </h2>
+                </div>
+              </div>
+
+              <div className="upload-box-oneimage">
+                {!imagePreview ? (
+                  <label
+                    htmlFor="file-upload"
+                    className="upload-placeholder-oneimage"
+                  >
+                    <Fileupload className="upload-icon" />
+                    <div className="upload-text">
+                      <span className="textdecor1">
+                        Drag & Drop your image here
+                      </span>
+                      <div className="browse-line">
+                        <span className="textdecor2">or </span>
+                        <span className="textdecor3">Click to browse</span>
+                      </div>
+                      <span className="textdecor4">
+                        *Maximum upload file size: 10MB
+                      </span>
+                    </div>
+                    <input
+                      id="file-upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      style={{ display: "none" }}
+                    />
+                  </label>
+                ) : (
+                  <div className="image-preview-inside-upload">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="preview-image-centered"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {imagePreview && (
+                <div className="preview-filename-row">
+                  <p className="preview-filename-text">
+                    {formData.file
+                      ? formData.file.name
+                      : imagePreview.split("/").pop()}
+                  </p>
+                  <button
+                    className="removebuttonmediapreview"
+                    onClick={handleRemoveImage}
+                  ></button>
+                </div>
               )}
-            </div>
 
-            {errors.form && (
-              <p className="error-message" style={{ textAlign: "center" }}>
-                {errors.form}
-              </p>
-            )}
+              {errors.file && (
+                <p className="error-message">
+                  <span className="rounded-full bg-[#CC000D] text-white h-5 w-5 flex item-center justify-center">
+                    i
+                  </span>
+                  {errors.file}
+                </p>
+              )}
 
-            <div className="create-btn-wrapper">
-              <button
-                className="create-form-btn"
-                onClick={editing ? handleUpdate : handleCreate}
-              >
-                {editing ? "SAVE" : "CREATE"}
-              </button>
-            </div>
-          </main>
-        </>
-      )}
+              <div className="form-grid">
+                <div>
+                  <input
+                    type="text"
+                    name="name"
+                    placeholder="Name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    className={errors.name ? "input-error" : ""}
+                  />
+                  {errors.name && (
+                    <p className="error-message">
+                      <span className="rounded-full bg-[#CC000D] text-white h-5 w-5 flex item-center justify-center">
+                        i
+                      </span>
+                      {errors.name}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <DatePicker
+                    label="Date"
+                    value={formData.date ? dayjs(formData.date) : null}
+                    onChange={handleDateChange}
+                    format="DD MM YYYY"
+                    disablePast
+                  />
+                  {errors.date && (
+                    <p className="error-message">
+                      <span className="rounded-full bg-[#CC000D] text-white h-5 w-5 flex item-center justify-center">
+                        i
+                      </span>
+                      {errors.date}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <input
+                    type="text"
+                    name="title"
+                    placeholder="Title"
+                    value={formData.title}
+                    onChange={handleInputChange}
+                    className={errors.title ? "input-error" : ""}
+                  />
+                  {errors.title && (
+                    <p className="error-message">
+                      <span className="rounded-full bg-[#CC000D] text-white h-5 w-5 flex item-center justify-center">
+                        i
+                      </span>
+                      {errors.title}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <input
+                    type="text"
+                    name="tag"
+                    placeholder="Write a key word, and hit enter to add tag"
+                    value={formData.tag}
+                    onChange={handleInputChange}
+                    className={errors.tag ? "input-error" : ""}
+                  />
+                  {errors.tag && (
+                    <p className="error-message">
+                      <span className="rounded-full bg-[#CC000D] text-white h-5 w-5 flex item-center justify-center">
+                        i
+                      </span>
+                      {errors.tag}
+                    </p>
+                  )}
+                </div>
+              </div>
 
-      {showLogoutModal && (
-        <div className="modal-overlay">
-          <div className="logout-modal">
-            <h3>LOG OUT</h3>
-            <p>Are you sure you want to log out?</p>
-            <div className="modal-actions">
-              <button className="cancel-btn" onClick={cancelLogout}>
-                CANCEL
-              </button>
-              <button className="confirm-logout-btn" onClick={confirmLogout}>
-                LOG OUT
-              </button>
+              <div className="description-editor">
+                <ReactQuill
+                  placeholder="Description"
+                  theme="snow"
+                  value={formData.description}
+                  onChange={handleDescriptionChange}
+                  modules={toolbarModules}
+                  className={`text-editor ${
+                    errors.description ? "input-error" : ""
+                  }`}
+                />
+                {errors.description && (
+                  <p className="error-message">{errors.description}</p>
+                )}
+              </div>
+
+              {errors.form && (
+                <p className="error-message" style={{ textAlign: "center" }}>
+                  {errors.form}
+                </p>
+              )}
+
+              <div className="create-btn-wrapper">
+                <button
+                  className="create-form-btn"
+                  onClick={editing ? handleUpdate : handleCreate}
+                >
+                  {editing ? "SAVE" : "CREATE"}
+                </button>
+              </div>
+            </main>
+          </>
+        )}
+
+        {showLogoutModal && (
+          <div className="modal-overlay">
+            <div className="logout-modal">
+              <h3>LOG OUT</h3>
+              <p>Are you sure you want to log out?</p>
+              <div className="modal-actions">
+                <button className="cancel-btn" onClick={cancelLogout}>
+                  CANCEL
+                </button>
+                <button className="confirm-logout-btn" onClick={confirmLogout}>
+                  LOG OUT
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {showDeleteModal && (
-        <div className="modal-overlay">
-          <div className="logout-modal">
-            <h3>DELETE</h3>
-            <p>Are you sure you want to delete?</p>
-            <div className="modal-actions">
-              <button className="cancel-btn" onClick={cancelDelete}>
-                CANCEL
-              </button>
-              <button className="confirm-logout-btn" onClick={confirmDelete}>
-                DELETE
-              </button>
+        {showDeleteModal && (
+          <div className="modal-overlay">
+            <div className="logout-modal">
+              <h3>DELETE</h3>
+              <p>Are you sure you want to delete?</p>
+              <div className="modal-actions">
+                <button className="cancel-btn" onClick={cancelDelete}>
+                  CANCEL
+                </button>
+                <button className="confirm-logout-btn" onClick={confirmDelete}>
+                  DELETE
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-      <ToastContainer
-        position="bottom-right"
-        autoClose={5000}
-        hideProgressBar
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss={false}
-        draggable={false}
-        pauseOnHover={false}
-        theme="light"
-        transition={Bounce}
-      />
-    </div>
+        )}
+        <ToastContainer
+          position="bottom-right"
+          autoClose={5000}
+          hideProgressBar
+          newestOnTop
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss={false}
+          draggable={false}
+          pauseOnHover={false}
+          theme="light"
+          transition={Bounce}
+        />
+      </div>
+    </LocalizationProvider>
   );
 }

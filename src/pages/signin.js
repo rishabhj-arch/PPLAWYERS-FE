@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import eyeiconshow from "../assets/eye icon show.svg";
 import eyeiconhide from "../assets/eye icon hide.svg";
 import { useNavigate } from "react-router-dom";
-import { ToastContainer, toast, Bounce } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
@@ -11,6 +9,8 @@ export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [serverError, setServerError] = useState("");
+  const [isLoading, setIsLoading] = useState(false); // 👈 new state for spinner
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -42,7 +42,11 @@ export default function SignInPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setServerError("");
+
     if (!validateInputs()) return;
+
+    setIsLoading(true); // 👈 show spinner
 
     try {
       const response = await fetch("http://localhost:3000/api/login", {
@@ -50,63 +54,39 @@ export default function SignInPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
+
       const data = await response.json();
 
       if (!response.ok) {
         if (data.message?.includes("email")) setEmailError(data.message);
         else if (data.message?.includes("password"))
           setPasswordError(data.message);
-        else
-          toast.error(data.message || "Login failed", {
-            position: "bottom-right",
-            autoClose: 2000,
-            hideProgressBar: false,
-            closeOnClick: false,
-            pauseOnHover: true,
-            draggable: true,
-            theme: "light",
-            transition: Bounce,
-          });
+        else setServerError(data.message || "Login failed");
         return;
       }
 
       localStorage.setItem("token", data.token);
-      toast.success("Successful Login!", {
-        position: "bottom-right",
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: false,
-        pauseOnHover: true,
-        draggable: true,
-        theme: "light",
-        transition: Bounce,
-      });
-      setTimeout(() => navigate("/insights_news"), 2500);
+      navigate("/insights_news");
     } catch (error) {
-      toast.error("An error occurred while logging in.", {
-        position: "bottom-right",
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: false,
-        pauseOnHover: true,
-        draggable: true,
-        theme: "light",
-        transition: Bounce,
-      });
+      setServerError("An error occurred while logging in. Please try again.");
+    } finally {
+      setIsLoading(false); // 👈 hide spinner
     }
   };
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
     if (emailError) setEmailError("");
+    if (serverError) setServerError("");
   };
 
   const handlePasswordChange = (e) => {
     setPassword(e.target.value);
     if (passwordError) setPasswordError("");
+    if (serverError) setServerError("");
   };
 
-  const isDisabled = email.trim() === "" || password.trim() === "";
+  const isDisabled = email.trim() === "" || password.trim() === "" || isLoading;
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-black text-textWhite px-6">
@@ -122,16 +102,30 @@ export default function SignInPage() {
           Sign in with your account
         </h2>
 
+        {/* Email Input */}
         <div className="w-full">
           <input
             type="text"
-            placeholder="email@gmail.com"
+            placeholder="Email"
             value={email}
             onChange={handleEmailChange}
-            className={`w-full px-4 py-3 bg-black border rounded-lg text-textWhite outline-none transition-all duration-300
-              placeholder-gray-500 focus:border-white focus:shadow-[0_0_4px_white] 
-              ${emailError ? "border-[#CC000D]" : "border-[#444]"}`}
+            className={`w-full px-4 py-3 bg-black text-textWhite outline-none transition-all duration-300 
+              focus:border-white focus:shadow-[0_0_4px_white]
+              ${emailError ? "border-[#CC000D]" : "border-[#717171]"}`}
+            style={{
+              borderRadius: "0",
+              borderWidth: "1px",
+              borderStyle: "solid",
+              color: "white",
+            }}
           />
+          <style>
+            {`
+              input::placeholder {
+                color: #717171;
+              }
+            `}
+          </style>
           {emailError && (
             <p className="text-[#CC000D] text-sm mt-1 font-montserrat">
               {emailError}
@@ -139,6 +133,7 @@ export default function SignInPage() {
           )}
         </div>
 
+        {/* Password Input */}
         <div className="w-full">
           <div className="relative w-full">
             <input
@@ -146,9 +141,15 @@ export default function SignInPage() {
               placeholder="Password"
               value={password}
               onChange={handlePasswordChange}
-              className={`w-full px-4 py-3 pr-12 bg-black border rounded-lg text-textWhite outline-none transition-all duration-300 
-      placeholder-gray-500 focus:border-white focus:shadow-[0_0_4px_white] 
-      ${passwordError ? "border-[#CC000D]" : "border-[#444]"}`}
+              className={`w-full px-4 py-3 pr-12 bg-black text-textWhite outline-none transition-all duration-300 
+                focus:border-white focus:shadow-[0_0_4px_white]
+                ${passwordError ? "border-[#CC000D]" : "border-[#717171]"}`}
+              style={{
+                borderRadius: "0",
+                borderWidth: "1px",
+                borderStyle: "solid",
+                color: "white",
+              }}
             />
             <span
               onClick={() => setShowPassword(!showPassword)}
@@ -168,35 +169,44 @@ export default function SignInPage() {
           )}
         </div>
 
+        {/* Server Error */}
+        {serverError && (
+          <p className="text-[#CC000D] text-sm text-center mt-1 font-montserrat">
+            {serverError}
+          </p>
+        )}
+
+        {/* Sign In Button */}
         <button
           type="submit"
           disabled={isDisabled}
-          className={`w-full py-2 mt-2 font-semibold rounded transition-transform duration-200
-    ${
-      isDisabled
-        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-        : "bg-white text-black cursor-pointer hover:-translate-y-0.5"
-    }`}
+          className={`w-full py-2 mt-2 font-semibold transition-transform duration-200 flex items-center justify-center gap-2
+            ${
+              isDisabled
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-white text-black cursor-pointer hover:-translate-y-0.5"
+            }`}
+          style={{
+            borderRadius: "0",
+            borderWidth: "1px",
+            borderStyle: "solid",
+            borderColor: "#717171",
+          }}
         >
-          <span className="text-[16px] font-semibold tracking-tight">
-            SIGN IN
-          </span>
+          {isLoading ? (
+            <>
+              <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+              <span className="text-[16px] font-semibold tracking-tight">
+                Signing in...
+              </span>
+            </>
+          ) : (
+            <span className="text-[16px] font-semibold tracking-tight">
+              SIGN IN
+            </span>
+          )}
         </button>
       </form>
-
-      <ToastContainer
-        position="bottom-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick={false}
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-        transition={Bounce}
-      />
     </div>
   );
 }
