@@ -46,7 +46,7 @@ export default function SignInPage() {
 
     if (!validateInputs()) return;
 
-    setIsLoading(true); // 👈 show spinner
+    setIsLoading(true);
 
     try {
       const response = await fetch("http://localhost:3000/api/login", {
@@ -70,7 +70,7 @@ export default function SignInPage() {
     } catch (error) {
       setServerError("An error occurred while logging in. Please try again.");
     } finally {
-      setIsLoading(false); // 👈 hide spinner
+      setIsLoading(false);
     }
   };
 
@@ -102,7 +102,6 @@ export default function SignInPage() {
           Sign in with your account
         </h2>
 
-        {/* Email Input */}
         <div className="w-full">
           <input
             type="text"
@@ -133,7 +132,6 @@ export default function SignInPage() {
           )}
         </div>
 
-        {/* Password Input */}
         <div className="w-full">
           <div className="relative w-full">
             <input
@@ -169,18 +167,16 @@ export default function SignInPage() {
           )}
         </div>
 
-        {/* Server Error */}
         {serverError && (
           <p className="text-[#CC000D] text-sm text-center mt-1 font-montserrat">
             {serverError}
           </p>
         )}
 
-        {/* Sign In Button */}
         <button
           type="submit"
           disabled={isDisabled}
-          className={`w-full py-2 mt-2 font-semibold transition-transform duration-200 flex items-center justify-center gap-2
+          className={`w-full h-[50px] py-2 mt-2 font-semibold transition-transform duration-200 flex items-center justify-center gap-2
             ${
               isDisabled
                 ? "bg-gray-300 text-gray-500 cursor-not-allowed"

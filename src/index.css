@@ -58,7 +58,7 @@ html {
 
 .insights-container {
   display: flex;
-  height: 100vh;
+  min-height: 100vh;
   background-color: #f9f9f9;
   color: #000;
   font-family: "Inter", sans-serif;
@@ -81,7 +81,8 @@ html {
 }
 
 .logo {
-  font-size: 13px;
+  font-size: 16px;
+  font-weight: 500;
   line-height: 1.4;
   margin-bottom: 10px;
   cursor: default;
@@ -119,14 +120,15 @@ html {
   border: none;
   text-align: left;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 16px;
+  font-weight: 500;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 11px;
 }
 
 .logouticon {
-  width: 22x;
+  width: 22px;
   height: 22px;
   object-fit: contain;
 }
@@ -172,6 +174,11 @@ html {
   height: 50px;
 }
 
+.create-btn:hover{
+  background-color: #000;
+  color: white;
+}
+
 .headerp {
   letter-spacing: 0px;
   font-weight: 600;
@@ -192,7 +199,7 @@ html {
   justify-content: flex-start;
   align-items: flex-start;
   padding-top: 0;
-  overflow-y: auto;
+  /* overflow-y: auto; */
 }
 
 .no-data {
@@ -517,12 +524,25 @@ html {
   height: 200px;
 }
 
+.ql-toolbar.ql-snow {
+    background-color: #f1f1f1 !important;
+    border-color: #ccc !important; 
+}
+
+.text-editor .ql-container.ql-snow {
+    background-color: #f1f1f1 !important;
+    border-color: #ccc !important; 
+}
+
 .create-form-btn {
   align-self: flex-end;
-  padding: 15px 68px;
+  margin-top: 30px;
+  width:200px;
+  height: 50px;
   background: #ffffff;
   color: #000000;
   border: none;
+  border: 1px solid black;
   cursor: pointer;
   font-size: 16px;
   font-weight: 600;
@@ -530,7 +550,8 @@ html {
 }
 
 .create-form-btn:hover {
-  background: #333;
+  background-color: black;
+  color: white;
 }
 
 .title-cell {
@@ -548,11 +569,18 @@ html {
 
 .news-table td {
   font-weight: 500;
-  padding: 16px;
+  font-size: 16px;
   text-align: left;
   border: none;
   color: black;
   vertical-align: middle;
+}
+
+.news-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #fff; 
 }
 
 .news-table th {
@@ -577,7 +605,7 @@ html {
 
 .actions {
   display: flex;
-  gap: 10px;
+  gap: 0px;
   align-items: center;
   justify-content: flex-end;
 }
@@ -641,6 +669,7 @@ html {
 }
 
 .search-close-icon:hover {
+  background-color: #717171;
   opacity: 1;
 }
 
@@ -754,3 +783,108 @@ html {
 .pagination-btn:hover:not(:disabled) {
   opacity: 0.7;
 }
+
+.image-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(1px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.image-overlay-content {
+  position: relative;
+  max-width: 90%;
+  max-height: 90%;
+}
+
+.full-image {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 0;
+  display: block;
+}
+
+.overlay-close-btn {
+  position: absolute;
+  top: 0px;
+  right: -28px;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  background: rgb(0, 0, 0);
+  padding: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  transition: 0.2s ease;
+}
+
+/* Date Picker Styling to match other inputs */
+.custom-date-picker {
+  width: 100%;
+}
+
+.custom-date-picker .MuiInputBase-root {
+  background-color: #f1f1f1 !important;
+  font-family: 'Montserrat', sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: #000000 !important;
+  padding: 0 !important;
+  height: auto !important;
+}
+
+.custom-date-picker .MuiInputBase-input {
+  padding: 20px !important;
+  font-family: 'Montserrat', sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: #717171 !important;
+  height: auto !important;
+}
+
+.custom-date-picker .MuiOutlinedInput-notchedOutline {
+  border-color: #ccc !important;
+}
+
+.custom-date-picker .MuiInputLabel-root {
+  font-family: 'Montserrat', sans-serif !important;
+  font-size: 14px !important;
+  color: #717171 !important;
+  transform: translate(20px, 20px) scale(1) !important;
+}
+
+.custom-date-picker .MuiInputLabel-shrink {
+  transform: translate(14px, -9px) scale(0.75) !important;
+}
+
+.custom-date-picker .MuiOutlinedInput-root {
+  height: 60px !important;
+}
+
+.custom-date-picker .MuiInputBase-input {
+  padding: 20px !important;
+  height: 60px !important;
+  box-sizing: border-box;
+}
+
+/* Description Editor Placeholder Styling */
+.text-editor .ql-editor.ql-blank::before {
+  font-family: 'Montserrat', sans-serif !important;
+  color: #717171 !important;
+  font-style: normal !important;
+  font-weight: 400 !important;
+  font-size: 14px !important;
+}
+
+.text-editor .ql-editor {
+  font-family: 'Montserrat', sans-serif !important;
+  background-color: #f1f1f1;
+  min-height: 200px;
+}
+
