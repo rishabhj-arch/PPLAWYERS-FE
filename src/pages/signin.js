@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
+import { TailSpin } from 'react-loader-spinner';
 import eyeiconshow from "../assets/eye icon show.svg";
 import eyeiconhide from "../assets/eye icon hide.svg";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../config";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
@@ -10,8 +12,9 @@ export default function SignInPage() {
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [serverError, setServerError] = useState("");
-  const [isLoading, setIsLoading] = useState(false); // 👈 new state for spinner
+  const [isLoading, setIsLoading] = useState(false); 
   const navigate = useNavigate();
+  const API_URL = process.env.REACT_APP_API_URL
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -49,7 +52,7 @@ export default function SignInPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:3000/api/login", {
+      const response = await fetch(`${API_URL}api/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -191,7 +194,14 @@ export default function SignInPage() {
         >
           {isLoading ? (
             <>
-              <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+              <TailSpin
+                height="20"
+                width="20"
+                color="#000000"
+                ariaLabel="tail-spin-loading"
+                radius="1"
+                visible={true}
+              />
               <span className="text-[16px] font-semibold tracking-tight">
                 Signing in...
               </span>

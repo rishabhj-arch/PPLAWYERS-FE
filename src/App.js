@@ -12,10 +12,38 @@ function App() {
       <Routes>
         <Route path="/" element={<SignInPage />} />
         <Route path="/signin" element={<SignInPage />} />
-        <Route path="/insights_news" element={<ProtectedRoute><InsightsNews /></ProtectedRoute>}/>
-        <Route path="/insights_news/create" element={<ProtectedRoute><CreateInsight /></ProtectedRoute>}/>
-        <Route path="/insights_news/edit" element={<ProtectedRoute><EditInsight /></ProtectedRoute>}/>
-        <Route path="/edit_insight" element={<ProtectedRoute><EditInsight /></ProtectedRoute>}/>
+        <Route
+          path="/insights_news"
+          element={
+            <ProtectedRoute>
+              <InsightsNews />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/insights_news/create"
+          element={
+            <ProtectedRoute>
+              <CreateInsight />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/insights_news/edit"
+          element={
+            <ProtectedRoute>
+              <EditInsight />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/edit_insight"
+          element={
+            <ProtectedRoute>
+              <EditInsight />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </Router>
   );
