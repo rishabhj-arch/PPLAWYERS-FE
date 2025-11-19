@@ -6,3 +6,89 @@ body {
   font-family: Montserrat;
 }
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
+
+/* Sidebar hover transition and sticky logout button */
+.sidebar {
+  transition: width 0.22s ease, background-color 0.22s ease, padding 0.22s ease;
+  width: 60px !important;
+  padding: 16px 8px !important;
+  position: relative;
+  overflow: hidden;
+}
+.sidebar:hover {
+  width: 210px !important;
+  padding: 20px !important;
+}
+
+.sidebar .nav-label,
+.sidebar .logo-text,
+.sidebar .logout-text {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  opacity: 0;
+  transform: translateX(-8px);
+}
+.sidebar:hover .nav-label,
+.sidebar:hover .logo-text,
+.sidebar:hover .logout-text {
+  opacity: 1;
+  transform: translateX(0);
+}
+.logout-btn {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  z-index: 20;
+  transition: left 0.18s ease, transform 0.18s ease, background-color 0.18s ease;
+}
+
+.sidebar:hover .logout-btn {
+  left: 16px;
+  transform: translateX(0);
+}
+
+.logout-btn svg {
+  display: block;
+}
+
+.logout-text {
+  font-size: 14px;
+  line-height: 1;
+  white-space: nowrap;
+  color: #717171;
+  font-weight: 600;
+  opacity: 0;
+}
+
+.sidebar:hover .logout-text {
+  opacity: 1;
+  color: #ffffff;
+}
+
+/* center icons when collapsed */
+.sidebar .nav-icon,
+.sidebar .logo-img {
+  display: block;
+  margin: 0 auto;
+}
+
+.sidebar .logo-text {
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.sidebar:hover .logo-text {
+  text-align: left;
+  white-space: nowrap;
+}

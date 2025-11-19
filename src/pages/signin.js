@@ -111,7 +111,7 @@ export default function SignInPage() {
             placeholder="Email"
             value={email}
             onChange={handleEmailChange}
-            className={`w-full px-4 py-3 bg-black text-textWhite outline-none transition-all duration-300 
+            className={`w-full px-4 py-3 bg-black text-white outline-none transition-all duration-300 
               focus:border-white focus:shadow-[0_0_4px_white]
               ${emailError ? "border-[#CC000D]" : "border-[#717171]"}`}
             style={{
@@ -142,7 +142,7 @@ export default function SignInPage() {
               placeholder="Password"
               value={password}
               onChange={handlePasswordChange}
-              className={`w-full px-4 py-3 pr-12 bg-black text-textWhite outline-none transition-all duration-300 
+              className={`w-full px-4 py-3 pr-12 bg-black text-white outline-none transition-all duration-300 
                 focus:border-white focus:shadow-[0_0_4px_white]
                 ${passwordError ? "border-[#CC000D]" : "border-[#717171]"}`}
               style={{

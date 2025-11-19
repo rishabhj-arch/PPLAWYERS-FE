@@ -438,7 +438,6 @@ export default function CreateInsight() {
               <div>
                 <div className="custom-date-picker w-full">
                   <DatePicker
-                    label="Date"
                     value={formData.date ? dayjs(formData.date) : null}
                     onChange={handleDateChange}
                     format="DD MMM, YYYY"
@@ -463,7 +462,7 @@ export default function CreateInsight() {
                           "& .MuiOutlinedInput-input": {
                             backgroundColor: "#F5F5F5 !important",
                             padding: "16px !important",
-                            fontFamily: "Montserrat",
+                            fontFamily: "Montserrat !important",
                             fontSize: "14px",
                             fontWeight: 500,
                             color: "#000000",
@@ -471,9 +470,9 @@ export default function CreateInsight() {
                             boxSizing: "border-box",
                           },
                           "& .MuiInputLabel-root": {
-                            color: "#717171",
-                            fontFamily: "Montserrat",
-                            fontSize: "14px",
+                            color: "#717171 !important",
+                            fontFamily: "Montserrat !important",
+                            fontSize: "14px !important",
                             transform: "translate(16px, 16px) scale(1)",
                           },
                           "& .MuiInputLabel-shrink": {

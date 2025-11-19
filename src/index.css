@@ -42,11 +42,15 @@ html {
   justify-content: space-between;
   align-items: center;
   padding: 18px 8px;
-  transition: width 0.22s ease, padding 0.22s ease;
+  position: relative;
+  transition: width 0.01s ease ; 
+  overflow: hidden;
+  /* Added z-index to ensure it stays above the content when expanding */
+  z-index: 20; 
 }
 
 .sidebar:hover {
-  width: 250px;
+  width: 340px;
   align-items: flex-start;
   padding: 20px;
 }
@@ -65,14 +69,14 @@ html {
 
 .logo {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
+  width: 100%;
 }
-
 .logo-img {
   width: 40px;
   height: 44px;
-  margin: 30px;
+  margin: 0;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -81,10 +85,13 @@ html {
 }
 
 .logo-text {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
-  line-height: 1.4;
+  line-height: 1.3;
   display: none;
+  white-space: normal;
+  word-wrap: break-word;
+  max-width: 280px; /* Ensure it fits within the expanded sidebar */
 }
 
 .sidebar:hover .logo-text {
@@ -147,8 +154,12 @@ html {
   display: flex;
   align-items: center;
   gap: 11px;
-  width: 100%;
+  width: auto;
   justify-content: center;
+  position: fixed;
+  bottom: 20px;
+  left: 20px; 
+  z-index: 1000;
 }
 
 .sidebar:hover .logout-btn {
@@ -173,11 +184,14 @@ html {
   color: white;
 }
 
-.main-content {
-  flex: 1;
+.main-page {
+  /* Ensure main page can contract if sidebar expands over it */
+  flex: 1 1 0%; 
   padding: 30px 40px;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden; /* Prevents horizontal scroll from expanding content */
+  min-width: 0;
 }
 
 .header {
@@ -235,6 +249,9 @@ html {
   justify-content: flex-start;
   align-items: flex-start;
   padding-top: 0;
+  min-height: 400px;
+  /* Table is now wrapped in a div inside the component, but we ensure content respects height */
+  position: relative; 
 }
 
 .no-data {
@@ -246,6 +263,9 @@ html {
   color: #777;
   height: 100%;
   width: 100%;
+  position: absolute; /* Ensures it centers within .content */
+  top: 0;
+  left: 0;
 }
 
 .no-data-icon {
@@ -353,6 +373,7 @@ html {
 .confirm-logout-btn:hover {
   opacity: 0.8;
 }
+
 
 .create-form-container {
   padding: 30px 50px;
@@ -563,9 +584,12 @@ html {
 }
 
 .news-table {
+  /* Set width to 100% to fill its container (the overflow-x-auto div) */
   width: 100%;
-  margin-top: 20px;
+  margin-top: 0px; /* Removed 20px margin here, managing space in the container */
   background: #fff;
+  border-collapse: collapse;
+  /* position: relative; Removed as it's now wrapped in a relative div */
 }
 .news-table th,
 .news-table td {
@@ -629,6 +653,10 @@ html {
   cursor: pointer;
   border-radius: 4px;
   transition: background-color 0.2s ease;
+}
+
+.table-icon-schedule{
+  cursor: default;
 }
 .table-icon-edit:hover,
 .table-icon-delete:hover {
@@ -773,4 +801,54 @@ html {
   padding: 6px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.3);
   transition: 0.2s ease;
+}
+
+.pagination-container {
+  /* Removed fixed positioning, width, and right/bottom constraints */
+  width: 100%; 
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px 0;
+  /* Removed fixed positioning properties */
+  /* position: fixed; */
+  /* bottom: 0; */
+  /* right: 0; */
+  z-index: 10;
+  background: white;
+  margin-top: 20px; 
+}
+
+.pagination-container button {
+  background: transparent;
+  border: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .main-page {
+    padding: 20px 30px;
+  }
+  
+  .news-table th,
+  .news-table td {
+    padding: 8px 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 80px;
+  }
+  
+  .sidebar:hover {
+    width: 280px;
+  }
+  
+  .main-page {
+    padding: 20px;
+  }
+  
+  .news-table {
+    font-size: 14px;
+  }
 }

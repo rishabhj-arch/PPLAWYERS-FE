@@ -59,6 +59,9 @@ export default function EditInsight() {
     file: null,
   });
 
+  const [originalData, setOriginalData] = useState(null);
+  const [isDataChanged, setIsDataChanged] = useState(false);
+
   const toastOptions = {
     position: "bottom-right",
     autoClose: 5000,
@@ -105,14 +108,17 @@ export default function EditInsight() {
       }
     }
 
-    setFormData({
+    const initialData = {
       name: newsItem.name || "",
       date: newsItem.date ? dayjs.utc(newsItem.date).local() : null,
       title: newsItem.title || "",
       tag: parsedTags,
       description: newsItem.description || "",
       file: null,
-    });
+    };
+    setFormData(initialData);
+    setOriginalData(initialData);
+    setIsDataChanged(false);
 
     setImagePreview(newsItem.imageUrl || null);
   }, [newsItem, navigate]);
@@ -131,13 +137,17 @@ export default function EditInsight() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    const updatedFormData = { ...formData, [name]: value };
+    setFormData(updatedFormData);
     setErrors((prev) => ({ ...prev, [name]: "" }));
+    checkIfDataChanged(updatedFormData);
   };
 
   const handleDateChange = (date) => {
-    setFormData({ ...formData, date });
+    const updatedFormData = { ...formData, date };
+    setFormData(updatedFormData);
     setErrors((prev) => ({ ...prev, date: "" }));
+    checkIfDataChanged(updatedFormData);
   };
 
   const handleFileChange = (e) => {
@@ -154,7 +164,9 @@ export default function EditInsight() {
         return;
       }
       setErrors((prev) => ({ ...prev, file: "" }));
-      setFormData({ ...formData, file });
+      const updatedFormData = { ...formData, file };
+      setFormData(updatedFormData);
+      setIsDataChanged(true);
 
       const reader = new FileReader();
       reader.onloadend = () => setImagePreview(reader.result);
@@ -163,16 +175,20 @@ export default function EditInsight() {
   };
 
   const handleRemoveImage = () => {
-    setFormData({ ...formData, file: null });
+    const updatedFormData = { ...formData, file: null };
+    setFormData(updatedFormData);
     setImagePreview(null);
     setErrors((prev) => ({ ...prev, file: "" }));
     const fileInput = document.getElementById("file-upload");
     if (fileInput) fileInput.value = null;
+    setIsDataChanged(true);
   };
 
   const handleDescriptionChange = (value) => {
-    setFormData({ ...formData, description: value });
+    const updatedFormData = { ...formData, description: value };
+    setFormData(updatedFormData);
     setErrors((prev) => ({ ...prev, description: "" }));
+    checkIfDataChanged(updatedFormData);
   };
 
   const handleTagInputFocus = (e) => {
@@ -269,8 +285,10 @@ export default function EditInsight() {
       return;
     }
 
-    setFormData({ ...formData, tag: newTags });
+    const updatedFormData = { ...formData, tag: newTags };
+    setFormData(updatedFormData);
     setErrors((prev) => ({ ...prev, tag: "" }));
+    checkIfDataChanged(updatedFormData);
   };
 
   const validateForm = () => {
@@ -322,6 +340,20 @@ export default function EditInsight() {
   };
 
   const handleGoBack = () => navigate("/insights_news");
+
+  const checkIfDataChanged = (updatedFormData) => {
+    if (!originalData) return;
+    
+    const changed =
+      updatedFormData.name !== originalData.name ||
+      (updatedFormData.date?.format("YYYY-MM-DD") !== originalData.date?.format("YYYY-MM-DD")) ||
+      updatedFormData.title !== originalData.title ||
+      JSON.stringify(updatedFormData.tag) !== JSON.stringify(originalData.tag) ||
+      updatedFormData.description !== originalData.description ||
+      updatedFormData.file !== null;
+    
+    setIsDataChanged(changed);
+  };
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -485,7 +517,6 @@ export default function EditInsight() {
                   }`}
                 >
                   <DatePicker
-                    label="Date"
                     value={formData.date ? dayjs(formData.date) : null}
                     onChange={handleDateChange}
                     format="DD MMM, YYYY"
@@ -609,9 +640,13 @@ export default function EditInsight() {
 
             <div className="flex justify-end mt-16">
               <button
-                className="w-[180px] h-[45px] bg-white text-black border border-black cursor-pointer text-base font-semibold hover:bg-black hover:text-white rounded-none transition-colors flex items-center justify-center gap-2"
+                className={`w-[180px] h-[45px] bg-white text-black border border-black text-base font-semibold rounded-none transition-colors flex items-center justify-center gap-2 ${
+                  !isDataChanged || isLoading
+                    ? "opacity-50 cursor-not-allowed"
+                    : "cursor-pointer hover:bg-black hover:text-white"
+                }`}
                 onClick={handleUpdate}
-                disabled={isLoading}
+                disabled={!isDataChanged || isLoading}
               >
                 {isLoading ? "SAVE" : "SAVE"}
               </button>
