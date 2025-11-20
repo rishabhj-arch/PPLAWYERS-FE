@@ -291,14 +291,11 @@ export default function InsightsNews() {
       </aside>
 
       <main className="main-page flex-1 px-10 py-[30px] flex flex-col bg-white">
-        <header className="flex justify-start items-center">
+        <header className="flex justify-start items-center pb-[15px] border-b border-[#ddd] mb-[25px]">
           <h2 className="text-base font-bold tracking-[0px] font-semibold text-xl mb-0 font-['Montserrat']">
             INSIGHTS & NEWS
           </h2>
         </header>
-
-        <div className="w-full h-px bg-[#ddd] my-[15px] mb-[25px]"></div>
-
         <div className="flex items-center gap-4 w-full mb-5">
           <div className="relative flex-1 flex items-center">
             <img
@@ -427,7 +424,7 @@ export default function InsightsNews() {
         </section>
 
         {newsData.length > 0 && (
-          <div className="pagination-container flex items-center justify-end gap-[5px] bg-white py-2.5 mt-5">
+          <div className="pagination-container flex items-center justify-end gap-[5px] bg-white mt-5 mb-0">
             <button
               onClick={handlePrev}
               disabled={page === 1}

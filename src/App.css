@@ -7,7 +7,6 @@ body {
 }
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
 
-/* Sidebar hover transition and sticky logout button */
 .sidebar {
   transition: width 0.22s ease, background-color 0.22s ease, padding 0.22s ease;
   width: 60px !important;
@@ -73,7 +72,7 @@ body {
   color: #ffffff;
 }
 
-/* center icons when collapsed */
+ center icons when collapsed 
 .sidebar .nav-icon,
 .sidebar .logo-img {
   display: block;
@@ -91,4 +90,4 @@ body {
 .sidebar:hover .logo-text {
   text-align: left;
   white-space: nowrap;
-}
+} 

@@ -7,7 +7,7 @@ import dayjs from "dayjs";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { ToastContainer, toast, Bounce } from "react-toastify";
-import { TailSpin } from 'react-loader-spinner';
+import { TailSpin } from "react-loader-spinner";
 import "react-toastify/dist/ReactToastify.css";
 import closeImageIcon from "../assets/closeimageicon.png";
 import sidebaricon from "../assets/news-svgrepo-com (1) 1.png";
@@ -49,7 +49,7 @@ export default function EditInsight() {
   const API_URL = process.env.REACT_APP_API_URL;
   const [isLogoutHover, setIsLogoutHover] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
-
+  
   const [formData, setFormData] = useState({
     name: "",
     date: null,
@@ -87,41 +87,38 @@ export default function EditInsight() {
   };
 
   useEffect(() => {
-    if (!newsItem) {
-      navigate("/insights_news");
-      return;
-    }
+    if (!newsItem) return;
 
     let parsedTags = [];
-    if (newsItem.tag) {
-      if (Array.isArray(newsItem.tag)) {
-        parsedTags = newsItem.tag;
-      } else if (typeof newsItem.tag === "string") {
-        try {
-          parsedTags = JSON.parse(newsItem.tag);
-        } catch {
-          parsedTags = newsItem.tag
-            .split(",")
-            .map((tag) => tag.trim())
-            .filter(Boolean);
-        }
+
+    if (Array.isArray(newsItem.tag)) {
+      parsedTags = newsItem.tag;
+    } else if (typeof newsItem.tag === "string") {
+      try {
+        parsedTags = JSON.parse(newsItem.tag);
+      } catch {
+        parsedTags = newsItem.tag
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean);
       }
     }
 
     const initialData = {
       name: newsItem.name || "",
-      date: newsItem.date ? dayjs.utc(newsItem.date).local() : null,
+      date: newsItem.date ? dayjs(newsItem.date) : null,
       title: newsItem.title || "",
       tag: parsedTags,
       description: newsItem.description || "",
       file: null,
     };
+
     setFormData(initialData);
     setOriginalData(initialData);
     setIsDataChanged(false);
 
     setImagePreview(newsItem.imageUrl || null);
-  }, [newsItem, navigate]);
+  }, [newsItem]);
 
   const handleLogout = () => setShowLogoutModal(true);
 
@@ -343,15 +340,17 @@ export default function EditInsight() {
 
   const checkIfDataChanged = (updatedFormData) => {
     if (!originalData) return;
-    
+
     const changed =
       updatedFormData.name !== originalData.name ||
-      (updatedFormData.date?.format("YYYY-MM-DD") !== originalData.date?.format("YYYY-MM-DD")) ||
+      updatedFormData.date?.format("YYYY-MM-DD") !==
+        originalData.date?.format("YYYY-MM-DD") ||
       updatedFormData.title !== originalData.title ||
-      JSON.stringify(updatedFormData.tag) !== JSON.stringify(originalData.tag) ||
+      JSON.stringify(updatedFormData.tag) !==
+        JSON.stringify(originalData.tag) ||
       updatedFormData.description !== originalData.description ||
       updatedFormData.file !== null;
-    
+
     setIsDataChanged(changed);
   };
 
@@ -556,7 +555,7 @@ export default function EditInsight() {
                     }}
                   />
                 </div>
-                {errors.date && !isPastDate && (
+                {errors.date && (
                   <p className="text-[#cc000d] text-xs mt-1 ml-0.5 flex items-center gap-1">
                     <span className="rounded-full bg-[#CC000D] text-white h-4 w-4 flex items-center justify-center text-[10px]">
                       i
