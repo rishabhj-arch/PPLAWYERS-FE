@@ -51,9 +51,9 @@ const ReactInputTag = ({ tags = [], onChange, placeholder, error, onFocus, disab
   return (
     <div
       onClick={handleContainerClick}
-      className={`flex flex-wrap items-center gap-2 bg-[#F5F5F5] w-full cursor-text ${
-        error ? "border border-[#cc000d]" : ""
-      } ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
+      className={`flex flex-wrap items-center gap-2 w-full transition-colors duration-200 ${
+        disabled ? "bg-[#E0E0E0] cursor-not-allowed" : "bg-[#F5F5F5] cursor-text"
+      } ${error ? "border border-[#cc000d]" : ""}`}
       style={{
         height: "50px",
         padding: "0 16px",
@@ -75,9 +75,9 @@ const ReactInputTag = ({ tags = [], onChange, placeholder, error, onFocus, disab
             alt="Remove tag"
             onClick={(e) => {
               e.stopPropagation();
-              if (!disabled) removeTag(index);
+              removeTag(index);
             }}
-            className="w-3 h-3 cursor-pointer flex-shrink-0"
+            className="w-3 h-3 cursor-pointer flex-shrink-0 hover:opacity-70"
           />
         </div>
       ))}

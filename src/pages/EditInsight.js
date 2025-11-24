@@ -189,51 +189,51 @@ export default function EditInsight() {
   };
 
   const handleTagInputFocus = (e) => {
-    const MAX_TAGS = 5;
-    if (formData.tag.length >= MAX_TAGS) {
-      toast.error(`You can only add a maximum of ${MAX_TAGS} tags.`, {
-        position: "bottom-right",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: false,
-        progress: undefined,
-        theme: "light",
-        transition: Bounce,
-        style: {
-          background: "#FFFFFF",
-          color: "#000000",
-          borderLeft: "10px solid #CC000D",
-          boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
-          fontFamily: "Montserrat",
-          fontWeight: 500,
-          fontSize: "14px",
-          letterSpacing: "0px",
-          padding: "16px",
-        },
-        icon: ({ theme, type }) => (
-          <div
-            style={{
-              backgroundColor: "#CC000D",
-              color: "#FFFFFF",
-              borderRadius: "50%",
-              width: "20px",
-              height: "20px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "12px",
-              fontWeight: "bold",
-            }}
-          >
-            i
-          </div>
-        ),
-      });
-      e.target.blur();
-    }
-  };
+  const MAX_TAGS = 5;
+  if (formData.tag.length >= MAX_TAGS) {
+    toast.error(`You can only add a maximum of ${MAX_TAGS} tags.`, {
+      position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: false,
+      draggable: false,
+      progress: undefined,
+      theme: "light",
+      transition: Bounce,
+      style: {
+        background: "#FFFFFF",
+        color: "#000000",
+        borderLeft: "10px solid #CC000D",
+        boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
+        fontFamily: "Montserrat",
+        fontWeight: 500,
+        fontSize: "14px",
+        letterSpacing: "0px",
+        padding: "16px",
+      },
+      icon: ({ theme, type }) => (
+        <div
+          style={{
+            backgroundColor: "#CC000D",
+            color: "#FFFFFF",
+            borderRadius: "50%",
+            width: "20px",
+            height: "20px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "12px",
+            fontWeight: "bold",
+          }}
+        >
+          i
+        </div>
+      ),
+    });
+    e.preventDefault();
+  }
+};
 
   const handleTagsChange = (newTags) => {
     const MAX_TAGS = 5;
